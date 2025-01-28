@@ -2,6 +2,8 @@
 
 
 import json
+import os
+os.chdir("%USERPROFILE%\\Desktop\\service")
 
 sequence = []
 sequence.append("1") #get_tile
