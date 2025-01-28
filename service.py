@@ -107,7 +107,19 @@ class PurchaseMonitorService(win32serviceutil.ServiceFramework):
         def session():
             pass
         def extract_lines():
-            pass
+            # finding the index of the first occurrence of the opening tag
+            start_idx = test_str.find("<" + tag + ">")
+            # base case
+            if start_idx == -1:
+                return []
+ 
+            # extracting the string between the opening and closing tags
+            end_idx = test_str.find("</" + tag + ">", start_idx)
+            res = [test_str[start_idx+len(tag)+2:end_idx]]
+         
+            # recursive call to extract strings after the current tag
+            res += extract_strings_recursive(test_str[end_idx+len(tag)+3:], tag)
+            return res
         
     def transmit_data(self, data):
         logging.info(f"{data}")
