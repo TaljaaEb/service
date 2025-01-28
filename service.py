@@ -10,7 +10,7 @@ from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 import pydivert
 import os
-os.chdir("C:\\Users\\taljaaeb.U188117949\\Desktop\\service")
+os.chdir("%USERPROFILE%\\Desktop\\service")
 
 class PurchaseEventHandler(FileSystemEventHandler):
     def __init__(self, logger, transmit_func):
