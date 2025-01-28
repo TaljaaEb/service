@@ -36,6 +36,18 @@ class ReplyEventHandler(FileSystemEventHandler):
                 self.logger.info(f"New reply event: {reply_data}")
                 self.reply_func(reply_data)
 
+class LinesEventHandler(FileSystemEventHandler):
+    def __init__(self, logger, lines_func):
+        self.logger = logger
+        self.reply_func = lines_func
+
+    def on_modified(self, event):
+        if event.src_path.endswith('lines_events.json'):
+            with open(event.src_path, 'r') as f:
+                lines_data = json.load(f)
+                self.logger.info(f"New reply event: {lines_data}")
+                self.lines_func(lines_data)
+
 class PurchaseMonitorService(win32serviceutil.ServiceFramework):
     _svc_name_ = "A_PurchaseMonitorService"
     _svc_display_name_ = "A_Purchase Monitor Service"
@@ -62,9 +74,11 @@ class PurchaseMonitorService(win32serviceutil.ServiceFramework):
                             format='%(asctime)s - %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
         logger = logging.getLogger('PurchaseMonitor')
 
-        event_handler = ReplyEventHandler(logger, self.get_reply)
+        event_handler0 = ReplyEventHandler(logger, self.get_lines)
+        event_handler1 = ReplyEventHandler(logger, self.get_reply)
         observer = Observer()
-        observer.schedule(event_handler, path='.', recursive=False)
+        observer.schedule(event_handler0, path='.', recursive=False)
+        observer.schedule(event_handler1, path='.', recursive=False)
         observer.start()
 
         try:
@@ -88,8 +102,13 @@ class PurchaseMonitorService(win32serviceutil.ServiceFramework):
                 write_file.close()
                 w.send(packet)
                 break
-            
-    
+                
+    def get_lines(self, data):
+        def session():
+            pass
+        def extract_lines():
+            pass
+        
     def transmit_data(self, data):
         logging.info(f"{data}")
         #store_ip = "192.168.1.100"  # Replace with the store's IP address
