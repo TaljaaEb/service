@@ -74,7 +74,7 @@ class PurchaseMonitorService(win32serviceutil.ServiceFramework):
                             format='%(asctime)s - %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
         logger = logging.getLogger('PurchaseMonitor')
 
-        event_handler0 = ReplyEventHandler(logger, self.get_lines)
+        event_handler0 = LinesEventHandler(logger, self.get_lines)
         event_handler1 = ReplyEventHandler(logger, self.get_reply)
         observer = Observer()
         observer.schedule(event_handler0, path='.', recursive=False)
