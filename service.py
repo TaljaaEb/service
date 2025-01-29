@@ -36,21 +36,9 @@ class ReplyEventHandler(FileSystemEventHandler):
                 self.logger.info(f"New reply event: {reply_data}")
                 self.reply_func(reply_data)
 
-class LinesEventHandler(FileSystemEventHandler):
-    def __init__(self, logger, lines_func):
-        self.logger = logger
-        self.reply_func = lines_func
-
-    def on_modified(self, event):
-        if event.src_path.endswith('lines_events.json'):
-            with open(event.src_path, 'r') as f:
-                lines_data = json.load(f)
-                self.logger.info(f"New reply event: {lines_data}")
-                self.lines_func(lines_data)
-
 class PurchaseMonitorService(win32serviceutil.ServiceFramework):
-    _svc_name_ = "A_PurchaseMonitorService"
-    _svc_display_name_ = "A_Purchase Monitor Service"
+    _svc_name_ = "C_PurchaseMonitorService"
+    _svc_display_name_ = "C_Purchase Monitor Service"
 
     def __init__(self, args):
         win32serviceutil.ServiceFramework.__init__(self, args)
@@ -70,20 +58,34 @@ class PurchaseMonitorService(win32serviceutil.ServiceFramework):
         self.main()
 
     def main(self):
-        logging.basicConfig(filename='purchase_monitor.log', level=logging.INFO,
+        logging.basicConfig(filename='c_purchase_monitor.log', level=logging.INFO,
                             format='%(asctime)s - %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
         logger = logging.getLogger('PurchaseMonitor')
 
-        event_handler0 = LinesEventHandler(logger, self.get_lines)
-        event_handler1 = ReplyEventHandler(logger, self.get_reply)
+        event_handler = ReplyEventHandler(logger, self.get_reply)
         observer = Observer()
-        observer.schedule(event_handler0, path='.', recursive=False)
-        observer.schedule(event_handler1, path='.', recursive=False)
+        observer.schedule(event_handler, path='.', recursive=False)
         observer.start()
 
         try:
             while self.is_alive:
                 time.sleep(1)
+                with pydivert.WinDivert("tcp.DstPort == 81 and tcp.PayloadLength > 0") as w:
+                    for packet in w:
+                        payload = packet.payload
+                        if bytes("SUCCESS", "utf-8") in payload:
+                            dictionary = {
+                                "error_code": "",
+                                "status": "SUCCESS",
+                                "message": "S"
+                            }
+                            # Serializing json
+                            json_object = json.dumps(dictionary, indent=4)
+                            # Writing to sample.json
+                            with open("reply_events.json", "a") as outfile:
+                                outfile.write(json_object)
+                        w.send(packet)
+                        break
         except KeyboardInterrupt:
             pass
         finally:
@@ -91,36 +93,9 @@ class PurchaseMonitorService(win32serviceutil.ServiceFramework):
             observer.join()
             
     def get_reply(self, data):
-        with pydivert.WinDivert("tcp.DstPort == 81 and tcp.PayloadLength > 0") as w:
-            for packet in w:
-                if bytes("SUCCESS", "utf-8") in payload:
-                    logging.info(f"{packet}")
-                    #print(packet)
-                logging.info(f"{packet}")
-                with open('reply_events.json', 'w') as write_file:
-                    write_file.write(str(packet))
-                write_file.close()
-                w.send(packet)
-                break
-                
-    def get_lines(self, data):
-        def session():
-            pass
-        def extract_lines():
-            # finding the index of the first occurrence of the opening tag
-            start_idx = test_str.find("<" + tag + ">")
-            # base case
-            if start_idx == -1:
-                return []
- 
-            # extracting the string between the opening and closing tags
-            end_idx = test_str.find("</" + tag + ">", start_idx)
-            res = [test_str[start_idx+len(tag)+2:end_idx]]
-         
-            # recursive call to extract strings after the current tag
-            res += extract_strings_recursive(test_str[end_idx+len(tag)+3:], tag)
-            return res
-        
+        pass
+            
+    
     def transmit_data(self, data):
         logging.info(f"{data}")
         #store_ip = "192.168.1.100"  # Replace with the store's IP address
