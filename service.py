@@ -10,10 +10,14 @@ from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 import pydivert
 import os
-os.chdir("C:\\Users\\TaljaaEb\\Desktop\\service")
-
+os.chdir("%USERPROFILE%\\Desktop\\service")
+#get_tile
+import configparser
+from win32gui import GetWindowText, GetForegroundWindow
+#get_line
 import requests
 import re
+
 stat_1 = "N"
 stat_2 = "N"
 stat_3 = "N"
@@ -57,10 +61,21 @@ class LineEventHandler(FileSystemEventHandler):
                 self.logger.info(f"New line event: {line_data}")
                 self.line_func(line_data)
 
+class TileEventHandler(FileSystemEventHandler):
+    def __init__(self, logger, tile_func):
+        self.logger = logger
+        self.tile_func = tile_func
+
+    def on_modified(self, event):
+        if event.src_path.endswith('tile_events.json'):
+            with open(event.src_path, 'r') as f:
+                tile_data = json.load(f)
+                self.logger.info(f"New tile event: {tile_data}")
+                self.tile_func(tile_data)
 
 class PurchaseMonitorService(win32serviceutil.ServiceFramework):
-    _svc_name_ = "A_AppLoggingService"
-    _svc_display_name_ = "A_App Logging Service"
+    _svc_name_ = "B_AppLoggingService"
+    _svc_display_name_ = "B_App Logging Service"
 
     def __init__(self, args):
         win32serviceutil.ServiceFramework.__init__(self, args)
@@ -80,6 +95,30 @@ class PurchaseMonitorService(win32serviceutil.ServiceFramework):
         self.main()
 
 ######
+    
+    def get_tile(self, data):
+        config = configparser.ConfigParser()
+        config.read("codes.ini")
+        wintext = config['app']['App']
+        if wintext == GetWindowText(GetForegroundWindow()):
+                dictionary = {
+                    "error_code": "",
+                    "status": "SUCCESS",
+                    "message": "N"
+                }
+        else:
+                dictionary = {
+                    "error_code": "",
+                    "status": "SUCCESS",
+                    "message": "Y"
+                }
+        # Serializing json
+        json_object = json.dumps(dictionary, indent=4)
+                    
+        # Writing to sample.json
+        with open("tile_events.json", "w") as outfile:
+        outfile.write(json_object)
+             
 
     def extract_strings_recursive(test_str, tag):
         # finding the index of the first occurrence of the opening tag
@@ -100,15 +139,18 @@ class PurchaseMonitorService(win32serviceutil.ServiceFramework):
 
 ######
     def main(self):
+        
         logging.basicConfig(filename='c_purchase_monitor.log', level=logging.INFO,
                             format='%(asctime)s - %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
         logger = logging.getLogger('PurchaseMonitor')
 
-        event_handler0 = LineEventHandler(logger, self.get_line)
-        event_handler1 = ReplyEventHandler(logger, self.get_reply)
+        event_handler0 = TileEventHandler(logger, self.get_tile)
+        event_handler1 = LineEventHandler(logger, self.get_line)
+        event_handler2 = ReplyEventHandler(logger, self.get_reply)
         observer = Observer()
         observer.schedule(event_handler0, path='.', recursive=False)
         observer.schedule(event_handler1, path='.', recursive=False)
+        observer.schedule(event_handler2, path='.', recursive=False)
         observer.start()
 
         try:
@@ -166,8 +208,19 @@ class PurchaseMonitorService(win32serviceutil.ServiceFramework):
             req = s.get('http://localhost:81/cart_trolley_checkout.html')
             lines = extract_strings_recursive(req.text, "ln")
             logging.info(f"{lines}")
+
+            dictionary = {
+                "error_code": "",
+                "status": "SUCCESS",
+                "message": "L"
+            }
+ 
+            # Serializing json
+            json_object = json.dumps(dictionary, indent=4)
+    
+            # Writing to sample.json
             with open("line_events.json", "w") as outfile:
-                    outfile.write(json_object)
+                outfile.write(json_object)
     
     def transmit_data(self, data):
         logging.info(f"{data}")
