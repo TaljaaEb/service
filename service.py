@@ -101,23 +101,23 @@ class PurchaseMonitorService(win32serviceutil.ServiceFramework):
         config.read("codes.ini")
         wintext = config['app']['App']
         if wintext == GetWindowText(GetForegroundWindow()):
-                dictionary = {
-                    "error_code": "",
-                    "status": "SUCCESS",
-                    "message": "N"
-                }
+            dictionary = {
+                "error_code": "",
+                "status": "SUCCESS",
+                "message": "N"
+            }
         else:
-                dictionary = {
-                    "error_code": "",
-                    "status": "SUCCESS",
-                    "message": "Y"
-                }
+            dictionary = {
+                "error_code": "",
+                "status": "SUCCESS",
+                "message": "Y"
+            }
         # Serializing json
         json_object = json.dumps(dictionary, indent=4)
                     
         # Writing to sample.json
         with open("tile_events.json", "w") as outfile:
-        outfile.write(json_object)
+            outfile.write(json_object)
              
 
     def extract_strings_recursive(test_str, tag):
@@ -152,7 +152,18 @@ class PurchaseMonitorService(win32serviceutil.ServiceFramework):
         observer.schedule(event_handler1, path='.', recursive=False)
         observer.schedule(event_handler2, path='.', recursive=False)
         observer.start()
-
+        dictionary = {
+            "error_code": "",
+            "status": "SUCCESS",
+            "message": "init"
+        }
+ 
+        # Serializing json
+        json_object = json.dumps(dictionary, indent=4)
+                
+        # Writing to sample.json
+        with open("line_events.json", "w") as outfile:
+            outfile.write(json_object)
         try:
             while self.is_alive:
                 time.sleep(1)
