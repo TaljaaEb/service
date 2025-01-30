@@ -14,10 +14,10 @@ Outputs to:
 - reply_events.json
 
 Baseline:
-- get_tile (working)
+- get_tile (manual+codes.ini & tab-random)
 - get_lines (working)
 - get_reply (working)
-- send_data (todo)
+- send_data (todo) spin up area-app
 
 What works: 
 - delete both c_purchase_monitor.log & reply_events.json
