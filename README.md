@@ -9,13 +9,13 @@ Release ready:
 
 Outputs to:
 - c_purchase_monitor.log
+- tile_events.json  (procrun)
 - line_events.json
 - reply_events.json
-- 
 
 Baseline:
-- get_tile (todo)
-- get_lines (busy)
+- get_tile (working)
+- get_lines (working)
 - get_reply (working)
 - send_data (todo)
 
