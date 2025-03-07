@@ -4,12 +4,12 @@ import hashlib
 clients = []
 verified = None
 
-sys.argv.append('127.0.0.1')
+sys.argv.append('172.29.n.n') #8900
 sys.argv.append('127.0.0.1')
 
 #HOST, PORT = 'localhost', 8900
 AUTH, APORT = str(sys.argv[1]), 443
-HOST, PORT, CERT, KEY = str(sys.argv[2]), 443, 'C:\\Users\\TaljaaEb\\Desktop\\B1COB2\\k_certificate.pem', 'C:\\Users\\TaljaaEb\\Desktop\\B1COB2\\k_private.key'
+HOST, PORT, CERT, KEY = str(sys.argv[2]), 443, 'certificate.pem', 'private.key'
 
 def auth():
     print('in auth-1')
@@ -24,36 +24,6 @@ def auth():
 
     context.load_verify_locations('C:\\Users\\TaljaaEb\\Desktop\\B1COB2\\k_cabundle.pem')
 
-#    context = ssl._create_unverified_context()
-#    context.load_cert_chain(certfile=CERT, keyfile=KEY, password=None)  # 1. key, 2. cert, 3. intermediates
-#    context.options |= ssl.OP_NO_TLSv1 | ssl.OP_NO_TLSv1_1  # optional
-#    context.set_ciphers('EECDH+AESGCM:EDH+AESGCM:AES256+EECDH:AES256+EDH')
-#    conn = context.wrap_socket(sock, server_hostname=HOST)
-##    conn = ssl.wrap_socket(sock,
-##                                keyfile=KEY,
-##                                certfile=CERT,
-##                                server_side=False,
-##                                cert_reqs=ssl.CERT_NONE,
-##                                ssl_version=ssl.PROTOCOL_SSLv3, #ssl_version=ssl.PROTOCOL_TLSv1_2, 
-##                                ca_certs=None,
-##                                do_handshake_on_connect=False,
-##                                suppress_ragged_eofs=True,
-##                                #ciphers="AES128-SHA256")
-##                                #ciphers="EECDH+AESGCM:EDH+AESGCM:AES256+EECDH:AES256+EDH:AES128-SHA256")
-##                                ciphers="DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES256-SHA256:ECDHE-RSA-AES128-SHA256")
-#    conn = ssl.wrap_socket(sock,
-#                                keyfile=KEY,
-#                                certfile=CERT,
-#                                server_side=True,
-#                                cert_reqs=ssl.CERT_NONE,
-#                                ssl_version=ssl.PROTOCOL_SSLv23,
-#                                ca_certs=None,
-#                                do_handshake_on_connect=True,
-#                                suppress_ragged_eofs=True,
-#                                ciphers="AES128-SHA256")
-
-
-
     # Wrap the socket with SSL/TLS (using TLSv1.3)
     conn = context.wrap_socket(
         sock,
@@ -62,12 +32,6 @@ def auth():
         suppress_ragged_eofs=True,
         server_hostname='127.0.0.1',
         session=None
-#        client_socket,
-#        keyfile="C:\\Users\\TaljaaEb\\Desktop\\B1COB2\\server.key",  # Path to the server private key
-#        certfile="C:\\Users\\TaljaaEb\\Desktop\\B1COB2\\server.crt",  # Path to the server certificate
-#        server_side=True,
-#        ssl_version=ssl.PROTOCOL_TLSv1_3
-#        server_hostname='localhost'
     )
 
 
@@ -128,36 +92,13 @@ def handle(conn, clients):
 
 def main(args=None):
     sock = socket.socket(socket.AF_INET)
-    #context = ssl.create_default_context(ssl.Purpose.SERVER_AUTH)
-##    context = ssl.SSLContext() #PROTOCOL_TLSv1_2, PROTOCOL_SSLv23
-    ##print(context.get_ciphers())
-#    context = ssl._create_unverified_context()
-#    context.load_cert_chain(certfile=CERT, keyfile=KEY, password=None)  # 1. key, 2. cert, 3. intermediates
-#    context.options |= ssl.OP_NO_TLSv1 | ssl.OP_NO_TLSv1_1  # optional
-#    conn = context.wrap_socket(sock, server_hostname=HOST)
-
     context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
     context.minimum_version = ssl.TLSVersion.TLSv1_3
     context.maximum_version = ssl.TLSVersion.TLSv1_3
     #context.verify_mode = ssl.CERT_REQUIRED
     context.check_hostname = False
 
-    context.load_verify_locations('C:\\Users\\TaljaaEb\\Desktop\\B1COB2\\k_cabundle.pem')
-
-
-
-##    conn = ssl.wrap_socket(sock,
-##                                keyfile=KEY,
-##                                certfile=CERT,
-##                                server_side=False,
-##                                cert_reqs=ssl.CERT_NONE,
-##                                ssl_version=ssl.PROTOCOL_SSLv23, #ssl_version=ssl.PROTOCOL_TLSv1_2, 
-##                                ca_certs=None,
-##                                do_handshake_on_connect=False,
-##                                suppress_ragged_eofs=True,
-##                                #ciphers="AES128-SHA256")
-##                                #ciphers="EECDH+AESGCM:EDH+AESGCM:AES256+EECDH:AES256+EDH:AES128-SHA256:TLS_AES_256_GCM_SHA384")
-##                                ciphers="DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES256-SHA256:ECDHE-RSA-AES128-SHA256")
+    context.load_verify_locations('cabundle.pem')
 
     # Wrap the socket with SSL/TLS (using TLSv1.3)
     conn = context.wrap_socket(
@@ -167,12 +108,6 @@ def main(args=None):
         suppress_ragged_eofs=True,
         server_hostname='127.0.0.1',
         session=None
-#        client_socket,
-#        keyfile="C:\\Users\\TaljaaEb\\Desktop\\B1COB2\\server.key",  # Path to the server private key
-#        certfile="C:\\Users\\TaljaaEb\\Desktop\\B1COB2\\server.crt",  # Path to the server certificate
-#        server_side=True,
-#        ssl_version=ssl.PROTOCOL_TLSv1_3
-#        server_hostname='localhost'
     )
 
 
